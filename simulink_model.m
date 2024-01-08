@@ -1,0 +1,20 @@
+delta_t=0.1;
+T_sim = 100;
+u=0; % Vecteur d'entrées
+% Déclaration des constantes du modèle %
+tau_pe=1;
+h_pe=1;
+alpha_pe=1;
+tau_ps=1;
+h_ps=1;
+alpha_ps=1;
+tau_pi=1;
+h_pi=1;
+alpha_pi=1;
+tau_sp=1;
+h_sp=1;
+alpha_sp=1;
+tau_ip=1;
+h_ip=1;
+alpha_ip=1;
+lambda=1;

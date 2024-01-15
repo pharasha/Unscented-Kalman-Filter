@@ -1,32 +1,63 @@
 clc
 clear all
+%h_pe=0.2;h_ps=0.2;h_pi=0.2;h_sp=0.2;h_ip=0.2;
 h_pe=1;h_ps=1;h_pi=1;h_sp=1;h_ip=1;
-tau2_pe = 1;tau2_ps = 1; tau2_pi = 1; tau2_sp = 1; tau2_ip = 1;  
-alpha_pe = 1;alpha_ps = 1;alpha_pi = 1;alpha_sp = 1;alpha_ip = 1;
-    % Discretization parameters
-    delta_t = 0.1;  
-    num_steps = 100;  
-    B=0;
-    
-    % Initial conditions
-    x = zeros(10, num_steps + 1);  
-    
-    % Set initial conditions
-    x(:, 1) = [6,2,8,9,1,0,4,4,9,1];  
-    
-    % Discretize the system using Euler's method
-    for k = 1:num_steps
+%Sélection aléatoire des paramètres tau et alpha and lambda
+tau_pe = rand();
+tau_ps = rand();
+tau_pi = rand();
+tau_sp = rand();
+tau_ip = rand();  
+alpha_pe = rand();
+alpha_ps = rand();
+alpha_pi = -rand(); % alpha_pi is taken negative
+alpha_sp = rand();
+alpha_ip = rand();
+lambda = 3;
+% Discretization parameters
+delta_t = 0.1;  %time step
+num_steps = 100; %number of steps
+N=11; %number of states
+% State vector init
+X=zeros(N,num_steps+1);
+X(:, 1) = [6,2,8,9,1,0,4,4,9,1,0]; 
+%Output Vector Init
+Y=zeros(1,num_steps+1);
+Y(1)=X(1,1)+X(3,1)+X(5,1);
+% Set random sequences dB,u,v
+dB=randn(1,num_steps+1);  
+u=rand(1,num_steps+1);
+v=rand(1,num_steps+1);
+%Function g
+g=@(lambda,x) 1/(1+exp(-lambda*x));
+% Discretize the system using Euler's method
+for k = 1:num_steps
+    X(1,k+1)=X(1,k)+X(2,k)*delta_t;
+    X(2,k+1)=X(2,k)+(-(1/tau_pe^2)*X(1,k)-2*h_pe*X(2,k))*delta_t+dB(k);
+    X(3,k+1)=X(3,k)+X(4,k)*delta_t;
+    X(4,k+1)=X(4,k)+(-(1/tau_ps^2)*X(3,k)-2*h_ps*X(4,k))*delta_t+(alpha_ps/tau_ps^2)*g(lambda,X(7,k))*delta_t;
+    X(5,k+1)=X(5,k)+X(6,k)*delta_t;
+    X(6,k+1)=X(6,k)+(-(1/tau_pi^2)*X(5,k)-2*h_pi*X(6,k))*delta_t+(alpha_pi/tau_pi^2)*g(lambda,X(9,k))*delta_t;
+    X(7,k+1)=X(7,k)+X(8,k)*delta_t;
+    X(8,k+1)=X(8,k)+(-(1/tau_sp^2)*X(7,k)-2*h_sp*X(8,k))*delta_t+(alpha_sp/tau_sp^2)*g(lambda,X(1,k)+X(3,k)+X(5,k))*delta_t;
+    X(9,k+1)=X(9,k)+X(10,k)*delta_t;
+    X(10,k+1)=X(10,k)+(-(1/tau_ip^2)*X(9,k)-2*h_ip*X(10,k))*delta_t+(alpha_ip/tau_ip^2)*g(lambda,X(1,k)+X(3,k)+X(5,k))*delta_t;
+    X(11,k+1)=u(k);
+    Y(k+1)=X(1,k+1)+X(3,k+1)+X(5,k+1)+v(k+1);
+end
 
-        X = x(:, k);
-        g_x = zeros(1, 3);  
-        x(:, k + 1) = X + delta_t * system_equations(X, alpha_pe, alpha_ps, alpha_pi, alpha_sp, alpha_ip, g_x, tau2_pe, tau2_ps, tau2_pi, tau2_sp, tau2_ip, h_pe, h_ps, h_pi, h_sp, h_ip,B);
-    end
-    
-    % Plot the results
-    time_vector = 0:delta_t:(num_steps * delta_t);
-    figure;
-    plot(time_vector, x');
-    xlabel('Time');
-    ylabel('State Variables');
-    legend('X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9', 'X10');
-    title('Simulation of the Discretized Dynamical System (Euler''s Method)');
+% Plot the results
+time_vector = 0:delta_t:(num_steps * delta_t);
+figure(1);
+plot(time_vector, X);
+xlabel('Time');
+ylabel('State Variables');
+legend('X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9', 'X10');
+title('Simulation of the Discretized Dynamical System (Euler''s Method)');
+
+figure(2);
+plot(time_vector, Y);
+xlabel('Time');
+ylabel('Observed Output');
+legend('Y');
+title('Simulation of the Discretized Dynamical System (Euler''s Method)');
